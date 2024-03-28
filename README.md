@@ -10,7 +10,7 @@ The code in this repository implements a permutation test approach for source re
 
 To use this code, you will need the following dependencies:
 
-- MATLAB or Octave
+- MATLAB and Freesurfer, MNE toolbox, 
 - Relevant toolboxes for neuroimaging data analysis (e.g., FieldTrip, SPM)
 
 ## Usage
