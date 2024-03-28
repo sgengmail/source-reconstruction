@@ -1,14 +1,10 @@
-    exp_dir = '/bcbl/home/home_n-z/sgeng/MEGtool/toolboxes/';
+exp_dir = '/bcbl/home/home_n-z/sgeng/MEGtool/toolboxes/';
 
-    % tbpath = '~/Dropbox/toolboxes/'
-    toolboxes = {'cartographie_motrice' 'fieldtrip-20170911'};
-    for tool = toolboxes
-        addpath(genpath(fullfile(exp_dir,tool{1})))  
-    end
-
-
-
-    
+% tbpath = '~/Dropbox/toolboxes/'
+toolboxes = {'cartographie_motrice' 'fieldtrip-20170911'};
+for tool = toolboxes
+    addpath(genpath(fullfile(exp_dir,tool{1})))  
+end  
     
   subjects = {
         'S1'
@@ -17,31 +13,20 @@
          'S4'
         'S5';
         'S6';
-           'S7';
+        'S7';
         'S8';
         'S9';
          'S11'
         'S12';
         'S13';
         }; 
- 
   
-    
-    raw_exp = 'G:\Premeg\shuang\Freesurfer';
-    meg_dir = 'G:\Premeg\shuang\MEG';
-    cd(fullfile(raw_exp));
-    subjects_dir = fullfile(raw_exp);
-    raw_dir =  fullfile(raw_exp,'raw');
-    exp = 'social';
-
-    
-    
-%     exp_dir = '/bcbl/home/home_n-z/sgeng/projects/naming';
-%     cd(fullfile(exp_dir,'FreeSurfer'));
-%     subjects_dir = fullfile(exp_dir,'FreeSurfer');
-%     meg_dir = fullfile(exp_dir,'meg');
-%     exp = 'naming';
-
+raw_exp = 'G:\Premeg\shuang\Freesurfer';   
+meg_dir = 'G:\Premeg\shuang\MEG';
+cd(fullfile(raw_exp));
+subjects_dir = fullfile(raw_exp);
+raw_dir =  fullfile(raw_exp,'raw');
+exp = 'social';
 group_fold = fullfile(subjects_dir,exp)
 
 
@@ -151,14 +136,6 @@ Va.pinfo(3) = 0;
 Va = spm_write_vol(Va,pmap);
 
 
-% % write a map thresholded a statistical significance
-% Zave = Zave.*(abs(Zave) > 0.19);
-% W.fname = fullfile(group_fold,'group_ave',['patents_' 'ventral_thresholded.nii']);
-% W = spm_write_vol(W,Zave);
-
-
-
-% smooth the map
 % smooth the map
 FWHM = 8;
 kern = CM_gaussian_kern(FWHM,W.dim);
@@ -170,7 +147,7 @@ Zave = real(ifftn(FZave));
 
 [cluster_neg,d] = CM_local_maxima(W,abs(Zave),0.03);  % threshold of 0.13 fixed based on inspection of the map (to uncover the left SM1 source)
 
-%% manual selection
+% manual selection
 keep = [1:10]; % manual selection (3 first are significant, last is added)
 cluster_neg = cluster_neg(keep);
 matfile = fullfile(group_fold,'group_ave',['cluster_group_pred']);
