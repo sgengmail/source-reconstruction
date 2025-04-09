@@ -1,0 +1,133 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Apr  1 16:56:25 2025
+
+@author: sgeng
+"""
+import nibabel
+
+import mne
+
+subjects_dir = '/Users/sgeng/Documents/lula'
+subject = 'sub3'
+
+fwdname =  subjects_dir + "/lula/sub3-fwd.fif"
+
+trans = subjects_dir + "/lula/sub3-trans.fif"
+
+raw_fname = subjects_dir + '/S3_raw.fif'
+
+
+
+
+src = mne.setup_source_space(subject, spacing='oct6',subjects_dir=subjects_dir, add_dist=False)
+mne.write_source_spaces(f'{subjects_dir}/{subject}/bem/{subject}-oct6-src.fif', src, overwrite=True)
+
+# Compute the BEM model
+conductivity = (0.3,)  # For a single-layer model; use (0.3, 0.006, 0.3) for a three-layer model
+bem_model = mne.make_bem_model(subject=subject, conductivity=conductivity,
+                               subjects_dir=subjects_dir)
+
+# Compute the BEM solution
+bem_solution = mne.make_bem_solution(bem_model)
+
+plot_bem_kwargs = dict(
+    subject=subject,
+    subjects_dir=subjects_dir,
+    brain_surfaces="white",
+    orientation="coronal",
+    slices=[50, 100, 150, 200],
+)
+
+mne.viz.plot_bem(**plot_bem_kwargs)
+
+# The transformation file obtained by coregistration
+
+info = mne.io.read_info(raw_fname)
+# Here we look at the dense head, which isn't used for BEM computations but
+# is useful for coregistration.
+mne.viz.plot_alignment(
+    info,
+    trans,
+    subject=subject,
+    dig=True,
+    meg=["helmet", "sensors"],
+    subjects_dir=subjects_dir,
+    surfaces="head-dense",
+)
+
+
+
+src = mne.setup_source_space(
+    subject, spacing="oct4", add_dist="patch", subjects_dir=subjects_dir
+)
+print(src)
+
+
+mne.viz.plot_bem(src=src, **plot_bem_kwargs)
+
+
+
+sphere = (0.0, 0.0, 0.04, 0.09)
+vol_src = mne.setup_volume_source_space(
+    subject,
+    subjects_dir=subjects_dir,
+    sphere=sphere,
+    sphere_units="m",
+    add_interpolator=False,
+)  # just for speed!
+print(vol_src)
+
+mne.viz.plot_bem(src=vol_src, **plot_bem_kwargs)
+
+
+
+
+surface = subjects_dir +'/' + subject +'/' + "bem/" + "inner_skull.surf"
+vol_src = mne.setup_volume_source_space(
+    subject, subjects_dir=subjects_dir, surface=surface, add_interpolator=False
+)  # Just for speed!
+print(vol_src)
+
+mne.viz.plot_bem(src=vol_src, **plot_bem_kwargs)
+
+
+fig = mne.viz.plot_alignment(
+    subject=subject,
+    subjects_dir=subjects_dir,
+    surfaces="white",
+    coord_frame="mri",
+    src=src,
+)
+mne.viz.set_3d_view(
+    fig,
+    azimuth=173.78,
+    elevation=101.75,
+    distance=0.30,
+    focalpoint=(-0.03, -0.01, 0.03),
+)
+
+
+conductivity = (0.3,)  # for single layer
+# conductivity = (0.3, 0.006, 0.3)  # for three layers
+model = mne.make_bem_model(
+    subject=subject, ico=4, conductivity=conductivity, subjects_dir=subjects_dir
+)
+bem = mne.make_bem_solution(model)
+
+fwd = mne.make_forward_solution(
+    raw_fname,
+    trans=trans,
+    src=src,
+    bem=bem,
+    meg=True,
+    eeg=False,
+    mindist=5.0,
+    n_jobs=None,
+    verbose=True,
+)
+print(fwd)
+
+
+mne.write_forward_solution(fwdname, fwd, overwrite=True, verbose=None)
